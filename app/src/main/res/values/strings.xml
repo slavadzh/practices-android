@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">practices-android</string>
+
+    <string name="tab_films">Фильмы</string>
+    <string name="tab_favorites">Избранное</string>
+    <string name="tab_profile">Профиль</string>
+
+    <string name="films_title">Фильмы студии Ghibli</string>
+    <string name="film_year">Год</string>
+    <string name="film_duration">Длительность</string>
+    <string name="film_duration_value">%1$d мин</string>
+    <string name="film_director">Режиссёр</string>
+    <string name="film_producer">Продюсер</string>
+
+    <string name="back">Назад</string>
+    <string name="retry">Повторить</string>
+    <string name="stub_coming_soon">Появится в следующих практиках</string>
 </resources>
