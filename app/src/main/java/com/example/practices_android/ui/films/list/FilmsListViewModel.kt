@@ -1,48 +1,59 @@
 package com.example.practices_android.ui.films.list
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.practices_android.data.FilmsRepository
-import com.example.practices_android.data.ServiceLocator
-import com.example.practices_android.data.model.FilmShort
+import com.example.practices_android.App
+import com.example.practices_android.domain.model.AppError
+import com.example.practices_android.domain.model.FilmShort
+import com.example.practices_android.domain.usecase.GetFilmsUseCase
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 
 sealed interface FilmsListUiState {
     data object Loading : FilmsListUiState
     data class Content(val films: List<FilmShort>) : FilmsListUiState
-    data class Error(val message: String) : FilmsListUiState
+    data class Error(val error: AppError) : FilmsListUiState
 }
 
 class FilmsListViewModel(
-    private val repository: FilmsRepository,
+    private val getFilms: GetFilmsUseCase,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<FilmsListUiState>(FilmsListUiState.Loading)
     val state: StateFlow<FilmsListUiState> = _state.asStateFlow()
 
+    private var loadJob: Job? = null
+
     init {
-        load()
+        load(forceRefresh = false)
     }
 
-    fun load() {
-        _state.value = FilmsListUiState.Loading
-        viewModelScope.launch {
-            _state.value = runCatching { repository.getFilms() }
-                .fold(
-                    onSuccess = { FilmsListUiState.Content(it) },
-                    onFailure = { FilmsListUiState.Error(it.message ?: "Unknown error") },
-                )
-        }
+    fun refresh() = load(forceRefresh = true)
+
+    private fun load(forceRefresh: Boolean) {
+        loadJob?.cancel()
+        loadJob = getFilms(forceRefresh)
+            .onStart { _state.value = FilmsListUiState.Loading }
+            .onEach { _state.value = FilmsListUiState.Content(it) }
+            .catch { _state.value = FilmsListUiState.Error(it as? AppError ?: AppError.Unknown(it)) }
+            .launchIn(viewModelScope)
     }
 
     companion object {
         val Factory = viewModelFactory {
-            initializer { FilmsListViewModel(ServiceLocator.filmsRepository) }
+            initializer {
+                val container = (this[APPLICATION_KEY] as App).container
+                FilmsListViewModel(container.getFilmsUseCase)
+            }
         }
     }
 }

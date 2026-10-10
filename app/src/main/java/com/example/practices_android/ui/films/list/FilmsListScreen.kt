@@ -14,10 +14,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -35,12 +37,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.practices_android.R
-import com.example.practices_android.data.mockFilms
-import com.example.practices_android.data.model.FilmShort
-import com.example.practices_android.data.model.toShort
+import com.example.practices_android.domain.model.FilmShort
 import com.example.practices_android.ui.common.ErrorView
 import com.example.practices_android.ui.common.FilmImage
 import com.example.practices_android.ui.common.LoadingView
+import com.example.practices_android.ui.common.previewFilms
 import com.example.practices_android.ui.theme.PracticesandroidTheme
 
 @Composable
@@ -49,7 +50,7 @@ fun FilmsListScreen(
     viewModel: FilmsListViewModel = viewModel(factory = FilmsListViewModel.Factory),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    FilmsListContent(state = state, onFilmClick = onFilmClick, onRetry = viewModel::load)
+    FilmsListContent(state = state, onFilmClick = onFilmClick, onRefresh = viewModel::refresh)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,16 +58,25 @@ fun FilmsListScreen(
 private fun FilmsListContent(
     state: FilmsListUiState,
     onFilmClick: (String) -> Unit,
-    onRetry: () -> Unit,
+    onRefresh: () -> Unit,
 ) {
     Scaffold(
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.films_title)) }) },
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.films_title)) },
+                actions = {
+                    IconButton(onClick = onRefresh) {
+                        Icon(Icons.Filled.Refresh, contentDescription = stringResource(R.string.refresh))
+                    }
+                },
+            )
+        },
         contentWindowInsets = WindowInsets(0),
     ) { padding ->
         val modifier = Modifier.padding(padding)
         when (state) {
             FilmsListUiState.Loading -> LoadingView(modifier)
-            is FilmsListUiState.Error -> ErrorView(state.message, onRetry, modifier)
+            is FilmsListUiState.Error -> ErrorView(state.error, onRefresh, modifier)
             is FilmsListUiState.Content -> LazyColumn(
                 modifier = modifier,
                 contentPadding = PaddingValues(16.dp),
@@ -133,9 +143,9 @@ private fun RatingBadge(score: Int) {
 private fun FilmsListPreview() {
     PracticesandroidTheme {
         FilmsListContent(
-            state = FilmsListUiState.Content(mockFilms.map { it.toShort() }),
+            state = FilmsListUiState.Content(previewFilms),
             onFilmClick = {},
-            onRetry = {},
+            onRefresh = {},
         )
     }
 }
