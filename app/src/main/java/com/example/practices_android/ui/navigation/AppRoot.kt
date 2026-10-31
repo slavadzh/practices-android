@@ -22,7 +22,9 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.practices_android.R
+import com.example.practices_android.ui.favorites.FavoritesScreen
 import com.example.practices_android.ui.films.details.FilmDetailsScreen
+import com.example.practices_android.ui.films.filters.FiltersScreen
 import com.example.practices_android.ui.films.list.FilmsListScreen
 import com.example.practices_android.ui.stub.StubScreen
 
@@ -43,6 +45,7 @@ fun AppRoot() {
                 composable(Routes.FILMS_LIST) {
                     FilmsListScreen(
                         onFilmClick = { id -> navController.navigate(Routes.filmDetails(id)) },
+                        onFiltersClick = { navController.navigate(Routes.FILTERS) },
                     )
                 }
                 composable(
@@ -51,9 +54,22 @@ fun AppRoot() {
                 ) {
                     FilmDetailsScreen(onBack = { navController.popBackStack() })
                 }
+                composable(Routes.FILTERS) {
+                    FiltersScreen(onBack = { navController.popBackStack() })
+                }
             }
-            composable(Routes.FAVORITES) {
-                StubScreen(title = stringResource(R.string.tab_favorites))
+            navigation(startDestination = Routes.FAVORITES, route = Routes.FAVORITES_GRAPH) {
+                composable(Routes.FAVORITES) {
+                    FavoritesScreen(
+                        onFilmClick = { id -> navController.navigate(Routes.favoriteDetails(id)) },
+                    )
+                }
+                composable(
+                    route = Routes.FAVORITE_DETAILS,
+                    arguments = listOf(navArgument(Routes.FILM_ID_ARG) { type = NavType.StringType }),
+                ) {
+                    FilmDetailsScreen(onBack = { navController.popBackStack() })
+                }
             }
             composable(Routes.PROFILE) {
                 StubScreen(title = stringResource(R.string.tab_profile))
