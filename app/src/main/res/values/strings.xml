@@ -14,5 +14,10 @@
 
     <string name="back">Назад</string>
     <string name="retry">Повторить</string>
+    <string name="refresh">Обновить</string>
+    <string name="error_no_connection">Нет соединения с сервером. Проверьте подключение к интернету</string>
+    <string name="error_not_found">Фильм не найден</string>
+    <string name="error_server">Ошибка сервера: %1$d</string>
+    <string name="error_unknown">Что-то пошло не так</string>
     <string name="stub_coming_soon">Появится в следующих практиках</string>
 </resources>

@@ -1,4 +1,4 @@
-package com.example.practices_android.data.model
+package com.example.practices_android.domain.model
 
 data class Film(
     val id: String,
@@ -22,13 +22,4 @@ data class FilmShort(
     val director: String,
     val releaseYear: Int,
     val rtScore: Int,
-)
-
-fun Film.toShort() = FilmShort(
-    id = id,
-    title = title,
-    posterUrl = posterUrl,
-    director = director,
-    releaseYear = releaseYear,
-    rtScore = rtScore,
 )

@@ -1,0 +1,22 @@
+package com.example.practices_android.data.remote
+
+import com.example.practices_android.data.remote.dto.FilmDto
+import retrofit2.http.GET
+import retrofit2.http.Path
+import retrofit2.http.Query
+
+interface GhibliApi {
+
+    @GET("films")
+    suspend fun getFilms(
+        @Query("fields") fields: String,
+        @Query("limit") limit: Int,
+    ): List<FilmDto>
+
+    @GET("films/{id}")
+    suspend fun getFilm(@Path("id") id: String): FilmDto
+
+    companion object {
+        const val BASE_URL = "https://ghibliapi.vercel.app/"
+    }
+}

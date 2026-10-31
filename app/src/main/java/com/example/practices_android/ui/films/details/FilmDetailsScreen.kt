@@ -39,11 +39,11 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.practices_android.R
-import com.example.practices_android.data.mockFilms
-import com.example.practices_android.data.model.Film
+import com.example.practices_android.domain.model.Film
 import com.example.practices_android.ui.common.ErrorView
 import com.example.practices_android.ui.common.FilmImage
 import com.example.practices_android.ui.common.LoadingView
+import com.example.practices_android.ui.common.previewFilm
 import com.example.practices_android.ui.theme.PracticesandroidTheme
 
 @Composable
@@ -64,7 +64,7 @@ private fun FilmDetailsContent(
     Box(Modifier.fillMaxSize()) {
         when (state) {
             FilmDetailsUiState.Loading -> LoadingView()
-            is FilmDetailsUiState.Error -> ErrorView(state.message, onRetry)
+            is FilmDetailsUiState.Error -> ErrorView(state.error, onRetry)
             is FilmDetailsUiState.Content -> FilmDetails(state.film)
         }
         IconButton(
@@ -289,7 +289,7 @@ private fun RatingCircle(score: Int, modifier: Modifier = Modifier) {
 private fun FilmDetailsPreview() {
     PracticesandroidTheme {
         FilmDetailsContent(
-            state = FilmDetailsUiState.Content(mockFilms.first()),
+            state = FilmDetailsUiState.Content(previewFilm),
             onBack = {},
             onRetry = {},
         )
