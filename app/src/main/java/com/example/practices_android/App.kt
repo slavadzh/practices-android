@@ -1,15 +1,17 @@
 package com.example.practices_android
 
 import android.app.Application
-import com.example.practices_android.di.AppContainer
+import com.example.practices_android.di.appModules
+import org.koin.android.ext.koin.androidContext
+import org.koin.core.context.startKoin
 
 class App : Application() {
 
-    lateinit var container: AppContainer
-        private set
-
     override fun onCreate() {
         super.onCreate()
-        container = AppContainer(this)
+        startKoin {
+            androidContext(this@App)
+            modules(appModules)
+        }
     }
 }

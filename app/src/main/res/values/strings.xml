@@ -12,6 +12,21 @@
     <string name="film_director">Режиссёр</string>
     <string name="film_producer">Продюсер</string>
 
+    <string name="films_empty">Ничего не найдено. Попробуйте изменить фильтры</string>
+
+    <string name="filters_title">Поиск и фильтры</string>
+    <string name="filters_title_label">Название фильма</string>
+    <string name="filters_director_label">Режиссёр</string>
+    <string name="filters_director_any">Любой</string>
+    <string name="filters_directors_unavailable">Не удалось загрузить список режиссёров</string>
+    <string name="filters_min_rating_label">Минимальный рейтинг: %1$d</string>
+    <string name="filters_reset">Сбросить</string>
+    <string name="filters_apply">Готово</string>
+
+    <string name="favorites_empty">В избранном пока пусто. Добавьте фильм кнопкой ♡ на его странице</string>
+    <string name="favorite_add">Добавить в избранное</string>
+    <string name="favorite_remove">Убрать из избранного</string>
+
     <string name="back">Назад</string>
     <string name="retry">Повторить</string>
     <string name="refresh">Обновить</string>

@@ -14,6 +14,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -37,7 +39,6 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.practices_android.R
 import com.example.practices_android.domain.model.Film
 import com.example.practices_android.ui.common.ErrorView
@@ -45,22 +46,36 @@ import com.example.practices_android.ui.common.FilmImage
 import com.example.practices_android.ui.common.LoadingView
 import com.example.practices_android.ui.common.previewFilm
 import com.example.practices_android.ui.theme.PracticesandroidTheme
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun FilmDetailsScreen(
     onBack: () -> Unit,
-    viewModel: FilmDetailsViewModel = viewModel(factory = FilmDetailsViewModel.Factory),
+    viewModel: FilmDetailsViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    FilmDetailsContent(state = state, onBack = onBack, onRetry = viewModel::load)
+    val isFavorite by viewModel.isFavorite.collectAsStateWithLifecycle()
+    FilmDetailsContent(
+        state = state,
+        isFavorite = isFavorite,
+        onBack = onBack,
+        onRetry = viewModel::load,
+        onFavoriteClick = viewModel::onFavoriteClick,
+    )
 }
 
 @Composable
 private fun FilmDetailsContent(
     state: FilmDetailsUiState,
+    isFavorite: Boolean,
     onBack: () -> Unit,
     onRetry: () -> Unit,
+    onFavoriteClick: () -> Unit,
 ) {
+    val overlayColors = IconButtonDefaults.iconButtonColors(
+        containerColor = Color.Black.copy(alpha = 0.4f),
+        contentColor = Color.White,
+    )
     Box(Modifier.fillMaxSize()) {
         when (state) {
             FilmDetailsUiState.Loading -> LoadingView()
@@ -69,15 +84,30 @@ private fun FilmDetailsContent(
         }
         IconButton(
             onClick = onBack,
-            colors = IconButtonDefaults.iconButtonColors(
-                containerColor = Color.Black.copy(alpha = 0.4f),
-                contentColor = Color.White,
-            ),
+            colors = overlayColors,
             modifier = Modifier
                 .statusBarsPadding()
                 .padding(8.dp),
         ) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
+        }
+        if (state is FilmDetailsUiState.Content) {
+            IconButton(
+                onClick = onFavoriteClick,
+                colors = overlayColors,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .statusBarsPadding()
+                    .padding(8.dp),
+            ) {
+                Icon(
+                    imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                    contentDescription = stringResource(
+                        if (isFavorite) R.string.favorite_remove else R.string.favorite_add,
+                    ),
+                    tint = if (isFavorite) Color(0xFFFF5A6E) else Color.White,
+                )
+            }
         }
     }
 }
@@ -290,8 +320,10 @@ private fun FilmDetailsPreview() {
     PracticesandroidTheme {
         FilmDetailsContent(
             state = FilmDetailsUiState.Content(previewFilm),
+            isFavorite = true,
             onBack = {},
             onRetry = {},
+            onFavoriteClick = {},
         )
     }
 }

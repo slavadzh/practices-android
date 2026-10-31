@@ -11,6 +11,9 @@ interface GhibliApi {
     suspend fun getFilms(
         @Query("fields") fields: String,
         @Query("limit") limit: Int,
+        @Query("title_like") title: String? = null,
+        @Query("director") director: String? = null,
+        @Query("rt_score_gte") minRating: Int? = null,
     ): List<FilmDto>
 
     @GET("films/{id}")

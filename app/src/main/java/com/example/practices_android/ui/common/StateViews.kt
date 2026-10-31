@@ -43,6 +43,19 @@ fun ErrorView(error: AppError, onRetry: () -> Unit, modifier: Modifier = Modifie
 }
 
 @Composable
+fun EmptyView(message: String, modifier: Modifier = Modifier) {
+    Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 24.dp),
+        )
+    }
+}
+
+@Composable
 private fun AppError.message(): String = when (this) {
     is AppError.NoConnection -> stringResource(R.string.error_no_connection)
     is AppError.NotFound -> stringResource(R.string.error_not_found)
