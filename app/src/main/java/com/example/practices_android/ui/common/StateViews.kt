@@ -56,9 +56,10 @@ fun EmptyView(message: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun AppError.message(): String = when (this) {
+fun AppError.message(): String = when (this) {
     is AppError.NoConnection -> stringResource(R.string.error_no_connection)
     is AppError.NotFound -> stringResource(R.string.error_not_found)
     is AppError.Server -> stringResource(R.string.error_server, code)
+    is AppError.InvalidUrl -> stringResource(R.string.error_invalid_url)
     is AppError.Unknown -> stringResource(R.string.error_unknown)
 }
