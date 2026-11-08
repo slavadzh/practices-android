@@ -20,7 +20,9 @@ object Routes {
     const val FAVORITES = "favorites"
     const val FAVORITE_DETAILS = "favorites/{$FILM_ID_ARG}"
 
+    const val PROFILE_GRAPH = "profile_graph"
     const val PROFILE = "profile"
+    const val PROFILE_EDIT = "profile/edit"
 
     fun filmDetails(id: String) = "films/$id"
 
@@ -35,5 +37,5 @@ enum class BottomTab(
 ) {
     FILMS(Routes.FILMS_GRAPH, Routes.FILMS_LIST, R.string.tab_films, Icons.Filled.PlayArrow),
     FAVORITES(Routes.FAVORITES_GRAPH, Routes.FAVORITES, R.string.tab_favorites, Icons.Filled.Favorite),
-    PROFILE(Routes.PROFILE, Routes.PROFILE, R.string.tab_profile, Icons.Filled.Person),
+    PROFILE(Routes.PROFILE_GRAPH, Routes.PROFILE, R.string.tab_profile, Icons.Filled.Person),
 }

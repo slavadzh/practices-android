@@ -26,7 +26,8 @@ import com.example.practices_android.ui.favorites.FavoritesScreen
 import com.example.practices_android.ui.films.details.FilmDetailsScreen
 import com.example.practices_android.ui.films.filters.FiltersScreen
 import com.example.practices_android.ui.films.list.FilmsListScreen
-import com.example.practices_android.ui.stub.StubScreen
+import com.example.practices_android.ui.profile.EditProfileScreen
+import com.example.practices_android.ui.profile.ProfileScreen
 
 @Composable
 fun AppRoot() {
@@ -71,8 +72,13 @@ fun AppRoot() {
                     FilmDetailsScreen(onBack = { navController.popBackStack() })
                 }
             }
-            composable(Routes.PROFILE) {
-                StubScreen(title = stringResource(R.string.tab_profile))
+            navigation(startDestination = Routes.PROFILE, route = Routes.PROFILE_GRAPH) {
+                composable(Routes.PROFILE) {
+                    ProfileScreen(onEditClick = { navController.navigate(Routes.PROFILE_EDIT) })
+                }
+                composable(Routes.PROFILE_EDIT) {
+                    EditProfileScreen(onBack = { navController.popBackStack() })
+                }
             }
         }
     }

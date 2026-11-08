@@ -1,37 +1,52 @@
 package com.example.practices_android.di
 
 import androidx.datastore.core.DataStore
+import androidx.datastore.dataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.room.Room
 import com.chuckerteam.chucker.api.ChuckerInterceptor
 import com.example.practices_android.data.local.db.AppDatabase
+import com.example.practices_android.data.local.profile.AvatarStorage
+import com.example.practices_android.data.local.profile.ProfileDto
+import com.example.practices_android.data.local.profile.ProfileSerializer
 import com.example.practices_android.data.remote.GhibliApi
+import com.example.practices_android.data.remote.ResumeDownloader
 import com.example.practices_android.data.repository.FavoritesRepositoryImpl
 import com.example.practices_android.data.repository.FilmsRepositoryImpl
 import com.example.practices_android.data.repository.FiltersRepositoryImpl
+import com.example.practices_android.data.repository.ProfileRepositoryImpl
 import com.example.practices_android.domain.repository.FavoritesRepository
 import com.example.practices_android.domain.repository.FilmsRepository
 import com.example.practices_android.domain.repository.FiltersRepository
+import com.example.practices_android.domain.repository.ProfileRepository
+import com.example.practices_android.domain.usecase.CreateCameraPhotoUriUseCase
+import com.example.practices_android.domain.usecase.DownloadResumeUseCase
 import com.example.practices_android.domain.usecase.GetDirectorsUseCase
 import com.example.practices_android.domain.usecase.GetFilmDetailsUseCase
 import com.example.practices_android.domain.usecase.GetFilmsUseCase
+import com.example.practices_android.domain.usecase.ImportAvatarUseCase
 import com.example.practices_android.domain.usecase.ObserveFavoritesUseCase
 import com.example.practices_android.domain.usecase.ObserveFiltersUseCase
 import com.example.practices_android.domain.usecase.ObserveIsFavoriteUseCase
+import com.example.practices_android.domain.usecase.ObserveProfileUseCase
 import com.example.practices_android.domain.usecase.SaveFiltersUseCase
+import com.example.practices_android.domain.usecase.SaveProfileUseCase
 import com.example.practices_android.domain.usecase.ToggleFavoriteUseCase
 import com.example.practices_android.ui.favorites.FavoritesViewModel
 import com.example.practices_android.ui.films.details.FilmDetailsViewModel
 import com.example.practices_android.ui.films.filters.FiltersBadgeCache
 import com.example.practices_android.ui.films.filters.FiltersViewModel
 import com.example.practices_android.ui.films.list.FilmsListViewModel
+import com.example.practices_android.ui.profile.EditProfileViewModel
+import com.example.practices_android.ui.profile.ProfileViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.android.ext.koin.androidContext
+import org.koin.core.qualifier.named
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
@@ -44,6 +59,14 @@ import java.util.concurrent.TimeUnit
 private const val TIMEOUT_SECONDS = 15L
 
 private val android.content.Context.filtersDataStore: DataStore<Preferences> by preferencesDataStore("filters")
+
+private val android.content.Context.profileDataStore: DataStore<ProfileDto> by dataStore(
+    fileName = "profile.json",
+    serializer = ProfileSerializer,
+)
+
+private val FILTERS_STORE = named("filters")
+private val PROFILE_STORE = named("profile")
 
 val networkModule = module {
     single { Json { ignoreUnknownKeys = true } }
@@ -70,13 +93,17 @@ val storageModule = module {
         Room.databaseBuilder(androidContext(), AppDatabase::class.java, AppDatabase.NAME).build()
     }
     single { get<AppDatabase>().favoritesDao() }
-    single { androidContext().filtersDataStore }
+    single(FILTERS_STORE) { androidContext().filtersDataStore }
+    single(PROFILE_STORE) { androidContext().profileDataStore }
+    single { AvatarStorage(androidContext()) }
+    single { ResumeDownloader(androidContext()) }
 }
 
 val dataModule = module {
     single<FilmsRepository> { FilmsRepositoryImpl(get(), get(), Dispatchers.IO) }
-    singleOf(::FiltersRepositoryImpl) bind FiltersRepository::class
+    single<FiltersRepository> { FiltersRepositoryImpl(get(FILTERS_STORE)) }
     singleOf(::FavoritesRepositoryImpl) bind FavoritesRepository::class
+    single<ProfileRepository> { ProfileRepositoryImpl(get(PROFILE_STORE), get(), get(), Dispatchers.IO) }
 }
 
 val domainModule = module {
@@ -88,6 +115,11 @@ val domainModule = module {
     factoryOf(::ObserveFavoritesUseCase)
     factoryOf(::ObserveIsFavoriteUseCase)
     factoryOf(::ToggleFavoriteUseCase)
+    factoryOf(::ObserveProfileUseCase)
+    factoryOf(::SaveProfileUseCase)
+    factoryOf(::ImportAvatarUseCase)
+    factoryOf(::CreateCameraPhotoUriUseCase)
+    factoryOf(::DownloadResumeUseCase)
 }
 
 val presentationModule = module {
@@ -96,6 +128,8 @@ val presentationModule = module {
     viewModelOf(::FilmDetailsViewModel)
     viewModelOf(::FiltersViewModel)
     viewModelOf(::FavoritesViewModel)
+    viewModelOf(::ProfileViewModel)
+    viewModelOf(::EditProfileViewModel)
 }
 
 val appModules = listOf(networkModule, storageModule, dataModule, domainModule, presentationModule)
